@@ -39,9 +39,9 @@ int main()
 
     Queue.print();
 
-    // î÷åðåäü íå ïóñòàÿ, 
-    // âñòàâëÿåòñÿ ýëåìåíò â ñåðåäèíó èëè êîíåö ñïèñêà, òî åñòü âñòàâêó â íà÷àëî ñïèñêà íå íóæíî ðàññìàòðèâàòü,
-    // åñëè pos áîëüøå äëèíû ñïèñêà, òî íóæíî âñòàâèòü ýëåìåíò â êîíåö ñïèñêà.
+    // Ð¾Ñ‡ÐµÑ€ÐµÐ´ÑŒ Ð½Ðµ Ð¿ÑƒÑÑ‚Ð°Ñ, 
+    // Ð²ÑÑ‚Ð°Ð²Ð»ÑÐµÑ‚ÑÑ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ Ð² ÑÐµÑ€ÐµÐ´Ð¸Ð½Ñƒ Ð¸Ð»Ð¸ ÐºÐ¾Ð½ÐµÑ† ÑÐ¿Ð¸ÑÐºÐ°, Ñ‚Ð¾ ÐµÑÑ‚ÑŒ Ð²ÑÑ‚Ð°Ð²ÐºÑƒ Ð² Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð½Ðµ Ð½ÑƒÐ¶Ð½Ð¾ Ñ€Ð°ÑÑÐ¼Ð°Ñ‚Ñ€Ð¸Ð²Ð°Ñ‚ÑŒ,
+    // ÐµÑÐ»Ð¸ pos Ð±Ð¾Ð»ÑŒÑˆÐµ Ð´Ð»Ð¸Ð½Ñ‹ ÑÐ¿Ð¸ÑÐºÐ°, Ñ‚Ð¾ Ð½ÑƒÐ¶Ð½Ð¾ Ð²ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ Ð² ÐºÐ¾Ð½ÐµÑ† ÑÐ¿Ð¸ÑÐºÐ°.
 
     std::thread th1(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 111, 2);
     std::thread th2(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 222, 2);
@@ -87,7 +87,7 @@ void FineGrainedQueue::print()
 void FineGrainedQueue::insertIntoMiddle(int value, int pos)
 {
 
-    if (this->_head == nullptr) // î÷åðåäü íå ïóñòàÿ
+    if (this->_head == nullptr) // Ð¾Ñ‡ÐµÑ€ÐµÐ´ÑŒ Ð½Ðµ Ð¿ÑƒÑÑ‚Ð°Ñ
         return;
 
     int curr_pos = 0;
@@ -99,13 +99,12 @@ void FineGrainedQueue::insertIntoMiddle(int value, int pos)
 
     while (current)
     {
-        curr_pos++; // âñòàâêó â íà÷àëî ñïèñêà íå íóæíî ðàññìàòðèâàòü
+        curr_pos++; // Ð²ÑÑ‚Ð°Ð²ÐºÑƒ Ð² Ð½Ð°Ñ‡Ð°Ð»Ð¾ ÑÐ¿Ð¸ÑÐºÐ° Ð½Ðµ Ð½ÑƒÐ¶Ð½Ð¾ Ñ€Ð°ÑÑÐ¼Ð°Ñ‚Ñ€Ð¸Ð²Ð°Ñ‚ÑŒ //Ð¸Ð´ÐµÐ¼ ÑÑ€Ð°Ð·Ñƒ Ñ 1 Ð° Ð½Ðµ Ñ 0
 
         prev = current;
         current = current->_next;
         if(current)
             current->node_mutex.lock();
-        //queue_mutex.unlock();
 
         if (pos == curr_pos)
         {
@@ -123,7 +122,7 @@ void FineGrainedQueue::insertIntoMiddle(int value, int pos)
     if (current)
         current->node_mutex.unlock();
 
-    if (pos >= curr_pos) // åñëè pos áîëüøå äëèíû ñïèñêà, òî íóæíî âñòàâèòü ýëåìåíò â êîíåö ñïèñêà
+    if (pos >= curr_pos) // ÐµÑÐ»Ð¸ pos Ð±Ð¾Ð»ÑŒÑˆÐµ Ð´Ð»Ð¸Ð½Ñ‹ ÑÐ¿Ð¸ÑÐºÐ°, Ñ‚Ð¾ Ð½ÑƒÐ¶Ð½Ð¾ Ð²ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚ Ð² ÐºÐ¾Ð½ÐµÑ† ÑÐ¿Ð¸ÑÐºÐ°
     {  
         Node* node = new Node(value);
         prev->node_mutex.lock();
