@@ -17,35 +17,29 @@ struct Node
 class FineGrainedQueue
 {
 private:
+    int queue_size = 0;
     Node* _head;
+    Node* _tail;
     std::mutex queue_mutex;
 
 public:
-    FineGrainedQueue() : _head(nullptr) {}
+    FineGrainedQueue() : _head(nullptr), _tail(nullptr) {}
     void insertIntoMiddle(int value, int pos);
     void push_front(int data);
     void print();
+    void fill(int amount = 3);
 };
 
 int main()
 {
     FineGrainedQueue Queue;
 
-    for (int i = 0; i < 3; i++)
-    {
-        int val = rand() % 19 + 1;
-        Queue.push_front(val);
-    };
-
+    Queue.fill(9);
     Queue.print();
 
-    // очередь не пустая, 
-    // вставляется элемент в середину или конец списка, то есть вставку в начало списка не нужно рассматривать,
-    // если pos больше длины списка, то нужно вставить элемент в конец списка.
-
+    std::thread th3(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 333, 8);
     std::thread th1(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 111, 2);
     std::thread th2(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 222, 2);
-    std::thread th3(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 333, 8);
     std::thread th4(&FineGrainedQueue::insertIntoMiddle, std::ref(Queue), 444, 2);
 
     th1.join();
@@ -58,12 +52,60 @@ int main()
     return 0;
 }
 
+void FineGrainedQueue::insertIntoMiddle(int value, int pos)
+{
+    if (queue_size == 0) // очередь не пустая
+        return;
+
+    if (pos <= 0) // вставку в начало списка не нужно рассматривать 
+        return;
+
+
+    Node* new_node = new Node(value);
+    queue_mutex.lock();
+
+    if (pos >= queue_size)
+    {
+        _tail->_next = new_node;
+        _tail = new_node;
+        queue_size++;
+        queue_mutex.unlock();
+        return;
+    }
+
+    int curr_pos = 1;  
+    Node* prev = this->_head;
+    Node* current = nullptr;  
+
+    while (curr_pos < pos - 1)   
+    {
+        prev = prev->_next;
+        curr_pos++;
+    }
+    current = prev->_next;
+
+    prev->node_mutex.lock();
+    current->node_mutex.lock();
+    queue_size++;
+    queue_mutex.unlock();
+
+    prev->_next = new_node;
+    new_node->_next = current;
+    prev->node_mutex.unlock();
+    current->node_mutex.unlock();
+
+}
 
 void FineGrainedQueue::push_front(int data)
 {
     Node* node = new Node(data);
     node->_next = _head;
     _head = node;
+
+    if (queue_size == 0)
+        _tail = node;
+
+    this->queue_size++;
 }
 
 void FineGrainedQueue::print()
@@ -77,56 +119,18 @@ void FineGrainedQueue::print()
     }
 
     Node* current = this->_head;
-    do
+    while (current)
     {
         cout << " " << std::setw(4) << current->_value;
         current = current->_next;
-    } while (current);
+    }
 }
 
-void FineGrainedQueue::insertIntoMiddle(int value, int pos)
+void FineGrainedQueue::fill(int amount)
 {
-
-    if (this->_head == nullptr) // очередь не пустая
-        return;
-
-    int curr_pos = 0;
-
-    Node* current = this->_head;
-    Node* prev = nullptr;
-
-    current->node_mutex.lock();
-
-    while (current)
+    for (int i = 0; i < amount; i++)
     {
-        curr_pos++; // вставку в начало списка не нужно рассматривать //идем сразу с 1 а не с 0
-
-        prev = current;
-        current = current->_next;
-        if(current)
-            current->node_mutex.lock();
-
-        if (pos == curr_pos)
-        {
-            Node* node = new Node(value);
-            prev->_next = node;
-            node->_next = current;
-
-            prev->node_mutex.unlock();
-            current->node_mutex.unlock();
-            return;
-        }
-
-        prev->node_mutex.unlock();
-    }
-    if (current)
-        current->node_mutex.unlock();
-
-    if (pos >= curr_pos) // если pos больше длины списка, то нужно вставить элемент в конец списка
-    {  
-        Node* node = new Node(value);
-        prev->node_mutex.lock();
-        prev->_next = node;
-        prev->node_mutex.unlock();
+        int val = rand() % 19 + 1;
+        this->push_front(val);
     }
 }
